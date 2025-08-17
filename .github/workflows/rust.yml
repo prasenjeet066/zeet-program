@@ -1,0 +1,43 @@
+name: Build Zeet for Termux
+
+on:
+  push:
+    tags:
+      - "v*.*.*"   # Run only when you push a version tag like v0.1.0
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Create package structure
+        run: |
+          mkdir -p zeet-deb/DEBIAN
+          mkdir -p zeet-deb/data/data/com.termux/files/usr/bin
+          cp target/release/zeet zeet-deb/data/data/com.termux/files/usr/bin/
+          cat > zeet-deb/DEBIAN/control <<EOF
+          Package: zeet
+          Version: ${GITHUB_REF_NAME#v}
+          Section: development
+          Priority: optional
+          Architecture: amd64
+          Maintainer: Your Name <you@example.com>
+          Description: Zeet Programming Language - a modern language like JavaScript
+          EOF
+          dpkg-deb --build zeet-deb zeet-${GITHUB_REF_NAME#v}.deb
+
+      - name: Upload release artifact
+        uses: softprops/action-gh-release@v2
+        with:
+          files: zeet-*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
