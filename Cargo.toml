@@ -1,7 +1,8 @@
 [package]
-name = "zeetlang"
+name = "zeet"  # এটা পরিবর্তন করুন
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 clap = { version = "5.6", features = ["derive"] }
+rand = "0.8"
